@@ -173,7 +173,7 @@ func (this *GuardMap) GetMostAsleepGuard() int {
 	return guardID
 }
 
-func (this *GuardMap) GetMostCommonSleepMinute(guardID int) int {
+func (this *GuardMap) GetMostCommonSleepMinute(guardID int) (int, int) {
 	// save count of each minute asleep to hash table
 	minuteMap := make(map[int]int, 60)
 	highestVal := 0
@@ -200,7 +200,29 @@ func (this *GuardMap) GetMostCommonSleepMinute(guardID int) int {
 		}
 	}
 
-	return highestMinute
+	return highestMinute, highestVal
+}
+
+func (this *GuardMap) GetMostFrequentlySleepingGuard() (int, int) {
+	guardTable := make(map[int]int)
+	highestFreq := 0
+	highestMinute := 0
+	selectedGuardID := -1
+
+	for _, guardInfo := range this.values {
+		guardID := guardInfo.guardID
+		if _, exists := guardTable[guardID]; !exists {
+			minute, sleepFreq := this.GetMostCommonSleepMinute(guardID)
+			guardTable[guardID] = minute
+			if sleepFreq > highestFreq {
+				selectedGuardID = guardID
+				highestMinute = minute
+				highestFreq = sleepFreq
+			}
+		}
+	}
+
+	return selectedGuardID, highestMinute
 }
 
 func createDayMonthString(month int, day int) string {
@@ -370,8 +392,13 @@ func main() {
 	populateSleepTimes(guardMap, sleepWakeMap)
 
 	mostAsleepID := guardMap.GetMostAsleepGuard()
-	mostCommonSleepMinute := guardMap.GetMostCommonSleepMinute(mostAsleepID)
+	mostCommonSleepMinute, _ := guardMap.GetMostCommonSleepMinute(mostAsleepID)
 	answer := mostAsleepID * mostCommonSleepMinute
+
+	fmt.Println(answer)
+
+	sleepyGuard, sleepyMinute := guardMap.GetMostFrequentlySleepingGuard()
+	answer = sleepyGuard * sleepyMinute
 
 	fmt.Println(answer)
 }
