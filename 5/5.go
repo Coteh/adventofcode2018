@@ -143,21 +143,36 @@ func Part1(input string, re *regexp.Regexp) int {
 
 func Part2(input string, re *regexp.Regexp) int {
 	shortest := len(input)
+	lengths := make([]int, 26)
+
+	var wg sync.WaitGroup
 
 	for i := 0; i < 26; i++ {
-		letterRemover, err := regexp.Compile(string('A' + i) + "|" + string('a' + i))
-		if err != nil {
-			log.Fatal("Couldn't generate part 2 regex")
-		}
+		wg.Add(1)
 
-		chunkedArr := createChunkedArray(input, -1)
+		go func(index int) {
+			defer wg.Done()
 
-		result := chunkedArr.ProcessChunks(letterRemover)
+			letterRemover, err := regexp.Compile(string('A' + index) + "|" + string('a' + index))
+			if err != nil {
+				log.Fatal("Couldn't generate part 2 regex")
+			}
 
-		reactLength := reactPolymer(result, re)
+			chunkedArr := createChunkedArray(input, -1)
 
-		if reactLength < shortest {
-			shortest = reactLength
+			result := chunkedArr.ProcessChunks(letterRemover)
+
+			reactLength := reactPolymer(result, re)
+
+			lengths[index] = reactLength
+		}(i)
+	}
+
+	wg.Wait()
+
+	for _, length := range lengths {
+		if length < shortest {
+			shortest = length
 		}
 	}
 
