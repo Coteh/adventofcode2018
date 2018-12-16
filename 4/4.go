@@ -56,26 +56,6 @@ func createSleepWakeTimes() *SleepWakeTimes {
 	}
 }
 
-// func (this *GuardMap) GetEntry(key string) GuardInfo {
-// 	this.RLock()
-// 	defer this.RUnlock()
-
-// 	return this.values[key]
-// }
-
-// func (this *GuardMap) SetMinutes(month int, day int, minutes []int) {
-// 	this.Lock()
-// 	defer this.Unlock()
-	
-// 	keyStr := createDayMonthString(month, day)
-// 	guardInfo := this.values[keyStr]
-// 	if guardInfo == (GuardInfo{}) {
-// 		log.Fatal("Guard Info cannot be found for specified date")
-// 	}
-
-// 	copy(guardInfo.minutes[:], minutes)
-// }
-
 func (this *GuardMap) CreateEntry(month int, day int, guardID int) {
 	this.Lock()
 	defer this.Unlock()
