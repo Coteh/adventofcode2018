@@ -112,6 +112,58 @@ func testChunks(chunkedArr *PolymerChunkArray, input string) {
 	}
 }
 
+func reactPolymer(input string, re *regexp.Regexp) int {
+	workingInput := input
+
+	numChunks := NumChunks
+
+	for true {
+		chunkedArr := createChunkedArray(workingInput, numChunks)
+
+		result := chunkedArr.ProcessChunks(re)
+
+		if result == workingInput {
+			if numChunks == 1 {
+				// No further actions can be taken
+				break
+			}
+			// Reduce number of chunks
+			numChunks -= 1
+		}
+
+		workingInput = result
+	}
+
+	return len(workingInput)
+}
+
+func Part1(input string, re *regexp.Regexp) int {
+	return reactPolymer(input, re)
+}
+
+func Part2(input string, re *regexp.Regexp) int {
+	shortest := len(input)
+
+	for i := 0; i < 26; i++ {
+		letterRemover, err := regexp.Compile(string('A' + i) + "|" + string('a' + i))
+		if err != nil {
+			log.Fatal("Couldn't generate part 2 regex")
+		}
+
+		chunkedArr := createChunkedArray(input, -1)
+
+		result := chunkedArr.ProcessChunks(letterRemover)
+
+		reactLength := reactPolymer(result, re)
+
+		if reactLength < shortest {
+			shortest = reactLength
+		}
+	}
+
+	return shortest
+}
+
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 
@@ -129,27 +181,6 @@ func main() {
 	// Uncomment to test
 	// testChunks(chunkedArr, input)
 
-	prevInput := input
-	numChunks := NumChunks
-
-	for true {
-		var chunkedArr *PolymerChunkArray
-
-		chunkedArr = createChunkedArray(prevInput, numChunks)
-
-		result := chunkedArr.ProcessChunks(re)
-
-		if result == prevInput {
-			if numChunks == 1 {
-				// No further actions can be taken
-				break
-			}
-			// Reduce number of chunks
-			numChunks -= 1
-		}
-
-		prevInput = result
-	}
-
-	fmt.Println(len(prevInput))
+	fmt.Println(Part1(input, re))
+	fmt.Println(Part2(input, re))
 }
