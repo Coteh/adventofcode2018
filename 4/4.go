@@ -19,7 +19,7 @@ type GuardInfo struct {
 	guardID int
 	month int
 	day int
-	minutes [60]int
+	minutes [NumMinutes]int
 }
 
 type GuardMap struct {
@@ -68,10 +68,10 @@ func (this *GuardMap) CreateEntry(month int, day int, guardID int) {
 	}
 }
 
-func (this *SleepWakeMap) GetSleepWakeTimes(month int, day int) [60]int {
+func (this *SleepWakeMap) GetSleepWakeTimes(month int, day int) [NumMinutes]int {
 	var sortedSleepMinutes []int
 	var sortedWakeMinutes []int
-	var result [60]int
+	var result [NumMinutes]int
 
 	keyStr := createDayMonthString(month, day)
 	sleepItem := this.values[keyStr]
@@ -155,7 +155,7 @@ func (this *GuardMap) GetMostAsleepGuard() int {
 
 func (this *GuardMap) GetMostCommonSleepMinute(guardID int) (int, int) {
 	// save count of each minute asleep to hash table
-	minuteMap := make(map[int]int, 60)
+	minuteMap := make(map[int]int, NumMinutes)
 	highestVal := 0
 	highestMinute := 0
 	
