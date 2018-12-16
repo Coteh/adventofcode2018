@@ -9,6 +9,7 @@ import (
 	"os"
 	"log"
 	"io"
+	"flag"
 )
 
 const NumChunks = 8
@@ -98,7 +99,8 @@ func generateRegex() *regexp.Regexp {
 	return re
 }
 
-func testChunks(chunkedArr *PolymerChunkArray, input string) {
+func testChunks(input string) {
+	chunkedArr := createChunkedArray(input, -1)
 	var testBuilder strings.Builder
 	
 	for i := 0; i < chunkedArr.numChunks; i++ {
@@ -180,6 +182,9 @@ func Part2(input string, re *regexp.Regexp) int {
 }
 
 func main() {
+	debugFlag := flag.Bool("debug", false, "Turn on debug options")
+	flag.Parse()
+
 	reader := bufio.NewReader(os.Stdin)
 
 	input, err := reader.ReadString('\n')
@@ -193,8 +198,9 @@ func main() {
 
 	re := generateRegex()
 
-	// Uncomment to test
-	// testChunks(chunkedArr, input)
+	if *debugFlag {
+		testChunks(input)
+	}
 
 	fmt.Println(Part1(input, re))
 	fmt.Println(Part2(input, re))
