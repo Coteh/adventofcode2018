@@ -34,6 +34,7 @@ type Board struct {
 	width int
 	height int
 	areas map[int]int
+	safeArea int
 }
 
 func buildBoard(coords []Coord) *Board {
@@ -69,15 +70,22 @@ func buildBoard(coords []Coord) *Board {
 	// function but for brevity it'll be
 	// in here.
 	// Going to be yucky O(n^3) for now.
+	// Also going to calculate safe area in here as well
+	// even though that also can be a separate function.
+	// Assuming that there is only one safe region on map.
+	safeArea := 0
 	for i, row := range board {
 		for j, _ := range row {
 			shortest := width * height
+			sum := 0
 			var shortestIDs []int
 			// NOTE: each coord will have different
 			// k value per run since we parallelized
 			// the parsing
 			for k, coord := range coords {
 				manhattan := int(math.Abs(float64(i - coord.x))) + int(math.Abs(float64(j - coord.y)))
+				sum += manhattan
+				// This is for part 1
 				if manhattan < shortest {
 					shortestIDs = make([]int, 0, 2)
 					shortestIDs = append(shortestIDs, k)
@@ -89,6 +97,11 @@ func buildBoard(coords []Coord) *Board {
 					shortestIDs = append(shortestIDs, k)
 				}
 			}
+			// This is for part 2
+			if sum < 10000 {
+				safeArea += 1
+			}
+			// This is for part 1
 			length := len(shortestIDs)
 			if length == 1 {
 				id := shortestIDs[0]
@@ -106,6 +119,7 @@ func buildBoard(coords []Coord) *Board {
 		width: width,
 		height: height,
 		areas: areasMap,
+		safeArea: safeArea,
 	}
 }
 
@@ -219,4 +233,6 @@ func main() {
 
 	pt1Answer := findLargestFiniteArea(board)
 	fmt.Println(pt1Answer)
+	pt2Answer := board.safeArea
+	fmt.Println(pt2Answer)
 }
