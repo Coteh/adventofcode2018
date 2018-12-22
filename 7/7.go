@@ -10,12 +10,22 @@ import (
 	"strings"
 	"regexp"
 	"sort"
+	"strconv"
+)
+
+type StepProgress int32
+
+const (
+	NOT_STARTED StepProgress 	= iota
+	STARTED StepProgress 		= iota
+	COMPLETED StepProgress 		= iota
 )
 
 type StepNode struct {
 	children []*StepNode
 	step rune
 	prereqs []rune
+	progress StepProgress
 }
 
 type StepTable struct {
@@ -24,24 +34,23 @@ type StepTable struct {
 	printed map[rune]bool
 }
 
-// Might need a queue for part 2, so kept
-// this stuff commented out for now
-// type StepQueueItem struct {
-// 	node *StepNode
-// 	level int
-// }
+type StepWorkItem struct {
+	workerID int
+	endTime int
+	stepNode *StepNode
+	isWorking bool
+}
 
-// type StepQueue struct {
-// 	nodeList []*StepQueueItem
-// 	existsMap map[rune]bool
-// 	highestLevel int
-// }
+type StepQueue struct {
+	availList []*StepNode
+}
 
 func createTreeNode(step rune) *StepNode {
 	return &StepNode {
 		step: step,
 		children: make([]*StepNode, 0, 5),
 		prereqs: make([]rune, 0, 5),
+		progress: NOT_STARTED,
 	}
 }
 
@@ -57,13 +66,24 @@ func createStepTable() *StepTable {
 	}
 }
 
-// func createQueue() *StepQueue {
-// 	return &StepQueue{
-// 		nodeList: make([]*StepQueueItem, 0, 5),
-// 		existsMap: make(map[rune]bool),
-// 		highestLevel: -1,
-// 	}
-// }
+func createQueue(stepTable *StepTable) *StepQueue {
+	queue := &StepQueue{
+		availList: make([]*StepNode, 0, 5),
+	}
+
+	// Poll for initial available nodes that satisfy all prereqs
+	// ie. they have no prereqs
+	for _, node := range stepTable.values {
+		if len(node.prereqs) == 0 {
+			queue.availList = append(queue.availList, node)
+		}
+	}
+
+	// Sort the current nodes alphabetically
+	queue.Sort()
+
+	return queue
+}
 
 func (this *StepNode) AddStepChild(node *StepNode) {
 	if this == nil {
@@ -132,6 +152,20 @@ func (this *StepTable) CheckPrereqs(node *StepNode) bool {
 	return true
 }
 
+func (this *StepTable) CheckPrereqCompletion(node *StepNode) bool {
+	if node == nil {
+		return false
+	}
+	
+	for _, prereq := range node.prereqs {
+		if this.values[prereq].progress != COMPLETED {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (this *StepTable) Print() {
 	availList := make([]*StepNode, 0, 5)
 	// Poll for initial available nodes that satisfy all prereqs
@@ -144,7 +178,6 @@ func (this *StepTable) Print() {
 	nodesAvailable := (len(availList) > 0)
 	// If we found some nodes, print them like this:
 	for nodesAvailable {
-		// leastLetter := 'Z'
 		var leastNode *StepNode
 		// Now print all nodes that are marked as available
 		// For each node available, also:
@@ -176,58 +209,58 @@ func (this *StepTable) Print() {
 	fmt.Print("\n")
 }
 
-// func (this *StepQueue) HasStep(step rune) bool {
-// 	return this.existsMap[step]
-// }
+func (this *StepQueue) HasAnymoreSteps() bool {
+	return len(this.availList) > 0
+}
 
-// func (this *StepQueue) CheckPrereqs(node *StepNode) bool {
-// 	for _, prereq := range node.prereqs {
-// 		fmt.Println("Checking " + string(node.step) + " prereq, which is " + string(prereq))
-// 		if !this.HasStep(prereq) {
-// 			return false
-// 		}
-// 	}
+func (this *StepQueue) Sort() {
+	sort.Slice(this.availList, func(i, j int) bool {
+		return this.availList[i].step < this.availList[j].step
+	})
+}
 
-// 	return true
-// }
+func (this *StepQueue) DequeueNextAvailableStep(stepTable *StepTable) *StepNode {
+	nodesAvailable := this.HasAnymoreSteps()
+	
+	if !nodesAvailable {
+		return nil
+	}
+	
+	// Find next available node that 
+	// hasn't been started already
+	var nextNode *StepNode
+	popIndex := 0
+	for true {
+		length := len(this.availList)
+		if popIndex >= length {
+			this.availList = this.availList[length:]
+			return nil
+		}
+		nextNode = this.availList[popIndex]
+		if nextNode == nil {
+			this.availList = this.availList[length:]
+			return nil
+		}
+		if nextNode.progress != NOT_STARTED || !stepTable.CheckPrereqCompletion(nextNode) {
+			popIndex += 1
+		} else {
+			break
+		}
+	}
 
-// func (this *StepQueue) EnqueueStep(node *StepNode, level int) {
-// 	if !this.CheckPrereqs(node) || this.existsMap[node.step] {
-// 		return
-// 	}
-// 	item := &StepQueueItem {
-// 		node: node,
-// 		level: level,
-// 	}
-// 	this.existsMap[node.step] = true
+	this.availList = this.availList[popIndex + 1:]
 
-// 	indexToInsert := -1
+	return nextNode
+}
 
-// 	fmt.Println(level)
-
-// 	// Insert new queue item alphabetically
-// 	for i, item := range this.nodeList {
-// 		if level < item.level && int(node.step) < int(item.node.step) {
-// 			indexToInsert = i
-// 			break
-// 		}
-// 	}
-
-// 	if (indexToInsert == -1) {
-// 		this.nodeList = append(this.nodeList, item)
-// 	} else {
-// 		this.nodeList = append(this.nodeList, nil)
-// 		copy(this.nodeList[indexToInsert + 1:], this.nodeList[indexToInsert:])
-// 		this.nodeList[indexToInsert] = item
-// 	}
-// }
-
-// func (this *StepQueue) Print() {
-// 	for _, item := range this.nodeList {
-// 		fmt.Print(string(item.node.step))
-// 	}
-// 	fmt.Print("\n")
-// }
+func (this *StepQueue) EnqueueStepChildren(node *StepNode) {
+	for _, child := range node.children {
+		if child.progress == NOT_STARTED {
+			this.availList = append(this.availList, child)
+		}
+	}
+	this.Sort()
+}
 
 func parseSteps(stepsArr []string, debug bool) *StepTable {
 	// Instantiate our data structures
@@ -261,6 +294,84 @@ func parseSteps(stepsArr []string, debug bool) *StepTable {
 	return table
 }
 
+func calculateTimeRequired(step rune) int {
+	return 60 + (int(step) - int('A') + 1)
+}
+
+func workSteps(stepTable *StepTable, numWorkers int) int {
+	time := 0
+	stepsCompleted := false
+	workItems := make(map[int]*StepWorkItem)
+	queue := createQueue(stepTable)
+	workCount := 0
+
+	// Initialize work items
+	// (each worker gets a work item - we'll reuse them)
+	for i := 0; i < numWorkers; i++ {
+		workItems[i] = &StepWorkItem {
+			workerID: i,
+			endTime: 0,
+			stepNode: nil,
+			isWorking: false,
+		}
+	}
+
+	for !stepsCompleted {
+		// If any workers have completed a step,
+		// then take the step off the work item,
+		// and enqueue children of the step into queue
+		for _, workItem := range workItems {
+			if workItem.isWorking && time >= workItem.endTime {
+				workItem.stepNode.progress = COMPLETED
+				queue.EnqueueStepChildren(workItem.stepNode)
+				workItem.stepNode = nil
+				workItem.isWorking = false
+				workCount -= 1
+			}
+		}
+		// If there are no more available tasks,
+		// then set stepsCompleted to true and end loop
+		if (!queue.HasAnymoreSteps() && workCount == 0) {
+			stepsCompleted = true
+			continue
+		}
+		// Assign unassigned workers to available tasks
+		// If there are no workers available atm, then
+		// we'll just continue to next iteration
+		for _, workItem := range workItems {
+			if !workItem.isWorking {
+				workItem.stepNode = queue.DequeueNextAvailableStep(stepTable)
+				if workItem.stepNode == nil {
+					continue
+				}
+				workItem.endTime = time + calculateTimeRequired(workItem.stepNode.step)
+				workItem.isWorking = true
+				workItem.stepNode.progress = STARTED
+				workCount += 1
+			}
+		}
+		// Increment time by a second
+		time += 1
+	}
+
+	return time
+}
+
+func testSteps() {
+	time := 60
+
+	for i := 0; i < 26; i++ {
+		expectedTime := (time + 1 + i)
+		expectedTimeStr := strconv.Itoa(expectedTime)
+		fmt.Println("Step " + string('A' + i) + " should take " + expectedTimeStr + " seconds.")
+		if calculateTimeRequired(rune('A' + i)) != expectedTime {
+			log.Fatal("Amount of work required for step " + string('A' + i) + " is incorrect.")
+		}
+	}
+
+	fmt.Println("All steps are correct");
+}
+
 func main() {
 	debugFlag := flag.Bool("debug", false, "Turn on debug options")
 	flag.Parse()
@@ -288,4 +399,11 @@ func main() {
 	stepTable = parseSteps(stepsArr, *debugFlag)
 
 	stepTable.Print()
+
+	if *debugFlag {
+		testSteps()
+	}
+
+	pt2Answer := workSteps(stepTable, 5)
+	fmt.Println(pt2Answer)
 }
