@@ -17,8 +17,9 @@ type StepProgress int32
 
 const (
 	NOT_STARTED StepProgress 	= iota
-	STARTED StepProgress 		= iota
-	COMPLETED StepProgress 		= iota
+	SCHEDULED	StepProgress	= iota
+	STARTED 	StepProgress 	= iota
+	COMPLETED 	StepProgress 	= iota
 )
 
 type StepNode struct {
@@ -76,6 +77,7 @@ func createQueue(stepTable *StepTable) *StepQueue {
 	for _, node := range stepTable.values {
 		if len(node.prereqs) == 0 {
 			queue.availList = append(queue.availList, node)
+			node.progress = SCHEDULED
 		}
 	}
 
@@ -229,26 +231,17 @@ func (this *StepQueue) DequeueNextAvailableStep(stepTable *StepTable) *StepNode 
 	// Find next available node that 
 	// hasn't been started already
 	var nextNode *StepNode
-	popIndex := 0
-	for true {
-		length := len(this.availList)
-		if popIndex >= length {
-			this.availList = this.availList[length:]
-			return nil
-		}
-		nextNode = this.availList[popIndex]
-		if nextNode == nil {
-			this.availList = this.availList[length:]
-			return nil
-		}
-		if nextNode.progress != NOT_STARTED || !stepTable.CheckPrereqCompletion(nextNode) {
-			popIndex += 1
-		} else {
-			break
+	popIndex := -1
+	for index, node := range this.availList {
+		if node.progress == SCHEDULED && stepTable.CheckPrereqCompletion(node) {
+			nextNode = node
+			popIndex = index
 		}
 	}
 
-	this.availList = this.availList[popIndex + 1:]
+	if popIndex >= 0 {
+		this.availList = append(this.availList[0:popIndex], this.availList[popIndex + 1:]...)
+	}
 
 	return nextNode
 }
@@ -257,6 +250,7 @@ func (this *StepQueue) EnqueueStepChildren(node *StepNode) {
 	for _, child := range node.children {
 		if child.progress == NOT_STARTED {
 			this.availList = append(this.availList, child)
+			child.progress = SCHEDULED
 		}
 	}
 	this.Sort()
@@ -298,7 +292,7 @@ func calculateTimeRequired(step rune) int {
 	return 60 + (int(step) - int('A') + 1)
 }
 
-func workSteps(stepTable *StepTable, numWorkers int) int {
+func workSteps(stepTable *StepTable, numWorkers int, debug bool) int {
 	time := 0
 	stepsCompleted := false
 	workItems := make(map[int]*StepWorkItem)
@@ -317,6 +311,9 @@ func workSteps(stepTable *StepTable, numWorkers int) int {
 	}
 
 	for !stepsCompleted {
+		if debug {
+			fmt.Println("At " + strconv.Itoa(time) + " seconds")
+		}
 		// If any workers have completed a step,
 		// then take the step off the work item,
 		// and enqueue children of the step into queue
@@ -348,6 +345,9 @@ func workSteps(stepTable *StepTable, numWorkers int) int {
 				workItem.isWorking = true
 				workItem.stepNode.progress = STARTED
 				workCount += 1
+				if debug {
+					fmt.Println("Worker " + strconv.Itoa(workItem.workerID) + " started on task " + string(workItem.stepNode.step) + ": Should be done at " + strconv.Itoa(workItem.endTime) + " seconds.")
+				}
 			}
 		}
 		// Increment time by a second
@@ -404,6 +404,6 @@ func main() {
 		testSteps()
 	}
 
-	pt2Answer := workSteps(stepTable, 5)
+	pt2Answer := workSteps(stepTable, 5, *debugFlag)
 	fmt.Println(pt2Answer)
 }
