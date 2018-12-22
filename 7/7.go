@@ -379,7 +379,7 @@ func testSteps() {
 		}
 	}
 
-	fmt.Println("All steps are correct");
+	fmt.Println("All steps are correct")
 }
 
 func main() {
@@ -397,7 +397,7 @@ func main() {
 				log.Fatal("Encountered an error with input")
 				os.Exit(1)
 			}
-			break;
+			break
 		}
 		input = strings.TrimRight(input, "\n")
 		stepsArr = append(stepsArr, input)
