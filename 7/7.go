@@ -236,6 +236,7 @@ func (this *StepQueue) DequeueNextAvailableStep(stepTable *StepTable) *StepNode 
 		if node.progress == SCHEDULED && stepTable.CheckPrereqCompletion(node) {
 			nextNode = node
 			popIndex = index
+			break
 		}
 	}
 
@@ -247,13 +248,19 @@ func (this *StepQueue) DequeueNextAvailableStep(stepTable *StepTable) *StepNode 
 }
 
 func (this *StepQueue) EnqueueStepChildren(node *StepNode) {
+	valuesAdded := false
+
 	for _, child := range node.children {
 		if child.progress == NOT_STARTED {
 			this.availList = append(this.availList, child)
 			child.progress = SCHEDULED
+			valuesAdded = true
 		}
 	}
-	this.Sort()
+
+	if valuesAdded {
+		this.Sort()
+	}
 }
 
 func parseSteps(stepsArr []string, debug bool) *StepTable {
@@ -340,6 +347,9 @@ func workSteps(stepTable *StepTable, numWorkers int, debug bool) int {
 				workItem.stepNode = queue.DequeueNextAvailableStep(stepTable)
 				if workItem.stepNode == nil {
 					continue
+				}
+				if debug {
+					fmt.Println("The next available work item is task " + string(workItem.stepNode.step) + ".")
 				}
 				workItem.endTime = time + calculateTimeRequired(workItem.stepNode.step)
 				workItem.isWorking = true
