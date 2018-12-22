@@ -63,6 +63,24 @@ func (this *TreeNode) GetSum() int {
 	return total
 }
 
+func (this *TreeNode) GetValue() (result int) {
+	if this.numChildren > 0 {
+		for _, index := range this.metadata {
+			if index > this.numChildren || index <= 0 {
+				result += 0	// skip
+			} else {
+				result += this.children[index - 1].GetValue()
+			}
+		}
+	} else {
+		for _, val := range this.metadata {
+			result += val
+		}
+	}
+
+	return result
+}
+
 func (this *TreeNode) Print(level int) {
 	fmt.Println("----------------")
 	_, err := fmt.Printf("Level %d - This node has %d children and %d metadata\n", level, this.numChildren, this.numMetadata)
@@ -223,5 +241,7 @@ func main() {
 	}
 
 	pt1Answer := tree.GetSum()
+	pt2Answer := tree.GetValue()
 	fmt.Println(pt1Answer)
+	fmt.Println(pt2Answer)
 }
