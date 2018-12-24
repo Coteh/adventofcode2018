@@ -242,4 +242,6 @@ func main() {
 
 	pt1Answer := beginGame(numPlayers, lastPoint, *debugFlag)
 	fmt.Println(pt1Answer)
+	pt2Answer := beginGame(numPlayers, lastPoint * 100, *debugFlag)
+	fmt.Println(pt2Answer)
 }
