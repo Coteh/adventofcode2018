@@ -147,8 +147,16 @@ func runLoop(lightPoints []LightPoint, boardLength int, endTime int) {
 			// clear board of old points if any
 			if time > 0 {
 				for _, cp := range clearPoints {
-					board[cp.y][cp.x] = '.'
+					if cp.x >= 0 && cp.y >= 0 {
+						board[cp.y][cp.x] = '.'
+					}
 				}
+			}
+
+			// clear clear points
+			for i, _ := range clearPoints {
+				clearPoints[i].x = -1
+				clearPoints[i].y = -1
 			}
 			
 			// plot new points
