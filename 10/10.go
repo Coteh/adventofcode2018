@@ -123,9 +123,10 @@ func runLoop(lightPoints []LightPoint, boardLength int, endTime int) {
 		}
 	}
 
-	var x, y, boardX, boardY int
+	var x, y, boardX, boardY, originX, originY int
 	var center Vector
 	workingPoints := make([]Vector, len(lightPoints))
+	clearPoints := make([]Vector, len(lightPoints))
 
 	for time := 0; time <= endTime; time++ {
 		// update working points
@@ -136,23 +137,22 @@ func runLoop(lightPoints []LightPoint, boardLength int, endTime int) {
 
 		// calculate center
 		center = calculateCenterPoint(workingPoints, boardLength)
-		// fmt.Println(center)
 
 		// calculate relative (0,0) point
-		originX := center.x - boardLength / 2
-		originY := center.y - boardLength / 2
+		originX = center.x - boardLength / 2
+		originY = center.y - boardLength / 2
 
 		// skip the drawing if points aren't close
 		if arePointsClose(workingPoints, center) {
-			// clear board of old points if any (currently unoptimized)
-			for i, _ := range board {
-				for j, _ := range board[i] {
-					board[i][j] = '.'
+			// clear board of old points if any
+			if time > 0 {
+				for _, cp := range clearPoints {
+					board[cp.y][cp.x] = '.'
 				}
 			}
-
+			
 			// plot new points
-			for _, pos := range workingPoints {
+			for i, pos := range workingPoints {
 				boardX = -1
 				boardY = -1
 				x = pos.x
@@ -163,7 +163,8 @@ func runLoop(lightPoints []LightPoint, boardLength int, endTime int) {
 					y < center.y + boardLength / 2 {
 						boardX = x - originX
 						boardY = y - originY
-						// isVisible = true
+						clearPoints[i].x = boardX
+						clearPoints[i].y = boardY
 				}
 				if boardX >= 0 && boardY >= 0 &&
 					boardX < boardLength &&
