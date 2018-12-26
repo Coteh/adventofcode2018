@@ -101,8 +101,8 @@ func getDistance(v1 Vector, v2 Vector) float64 {
 
 func arePointsClose(points []Vector, centerPoint Vector) bool {
 	for _, pos := range points {
-		if float64(pos.x - centerPoint.x) > float64(10) &&
-			float64(pos.y - centerPoint.y) > float64(10) {
+		if float64(pos.x - centerPoint.x) > 10 &&
+			float64(pos.y - centerPoint.y) > 10 {
 			return false
 		}
 	}
