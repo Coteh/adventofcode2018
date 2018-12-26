@@ -9,7 +9,6 @@ import (
 	"os"
 	"flag"
 	"strconv"
-	"math"
 )
 
 type Vector struct {
@@ -95,10 +94,10 @@ func calculateCenterPoint(workingPoints []Vector, boardLength int) Vector {
 	return center
 }
 
-func getDistance(v1 Vector, v2 Vector) float64 {
-	return math.Sqrt(math.Pow(float64(v2.x - v1.x), 2) + math.Pow(float64(v2.y - v1.y), 2))
-}
-
+// If every point is near the center (average) point
+// in at least one dimension, then the points are "close".
+// I got the idea of checking in at least one dimension
+// from here https://stackoverflow.com/a/29729612
 func arePointsClose(points []Vector, centerPoint Vector) bool {
 	for _, pos := range points {
 		if float64(pos.x - centerPoint.x) > 10 &&
@@ -221,5 +220,13 @@ func main() {
 		lightPoints = append(lightPoints, lightPoint)
 	}
 
+	// I noticed in one of my debugging sessions
+	// that there were some points really close to each
+	// other within the 10,000 second mark, so
+	// I increased end time by 10,000 manually for each run
+	// until something printed out. Probably not the best
+	// way to do it, but hopefully one day I can learn
+	// a better way to detect a plot that can be printed
+	// without having to manually set end time.
 	runLoop(lightPoints, 100, 20000)
 }
