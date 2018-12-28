@@ -29,12 +29,7 @@ func initHologram() *Hologram {
 }
 
 func (this *Hologram) Print() {
-	for _, row := range this.board {
-		for _, cell := range row {
-			fmt.Printf("%d ", cell)
-		}
-		fmt.Println("\n")
-	}
+	printSquare(this.board)
 }
 
 func (this *Hologram) MapSquare(x int, y int) [][]int {
@@ -51,7 +46,7 @@ func (this *Hologram) MapSquare(x int, y int) [][]int {
 	return mapped
 }
 
-func (this *Hologram) CheckHighestPower(x int, y int, width int, height int) (int, int) {
+func (this *Hologram) CheckHighestPower(x int, y int, width int, height int) (int, int, int, [][]int) {
 	// Create the arrays
 	squares := make([][][]int, height * width)
 	for i := y; i < y + height; i++ {
@@ -76,7 +71,7 @@ func (this *Hologram) CheckHighestPower(x int, y int, width int, height int) (in
 		}
 	}
 
-	return largestX, largestY
+	return largestX, largestY, largest, squares[largestY * height + largestX]
 }
 
 func getPowerLevel(x int, y int, serialNum int) int {
@@ -114,6 +109,17 @@ func createHologramFromSerialNumber(serialNum int) *Hologram {
 	return hologram
 }
 
+func printSquare(square [][]int) {
+	fmt.Println("----------------")
+	for _, row := range square {
+		for _, cell := range row {
+			fmt.Printf("%d ", cell)
+		}
+		fmt.Print("\n")
+	}
+	fmt.Println("----------------")
+}
+
 func checkSquare(square [][]int) int {
 	sum := 0
 
@@ -126,12 +132,17 @@ func checkSquare(square [][]int) int {
 	return sum
 }
 
-func findLargestSquare(hologram *Hologram) (int, int) {
+func findLargestSquare(hologram *Hologram, debug bool) (int, int) {
 	// There are 298 x 298 = 88804 3x3 squares
 	// to check if we don't apply any heuristics
 	// to narrow down results.
 	// This could be parallelized to improve performance.
-	x, y := hologram.CheckHighestPower(0,0,298,298)
+	x, y, highest, square := hologram.CheckHighestPower(0,0,298,298)
+
+	if debug {
+		fmt.Printf("Highest power is at %d,%d with value %d: \n", x, y, highest)
+		printSquare(square)
+	}
 	
 	return x, y
 }
@@ -177,6 +188,6 @@ func main() {
 		hologram.Print()
 	}
 
-	pt1X, pt1Y := findLargestSquare(hologram)
+	pt1X, pt1Y := findLargestSquare(hologram, *debugFlag)
 	fmt.Println(pt1X, pt1Y)
 }
