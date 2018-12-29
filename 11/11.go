@@ -16,6 +16,14 @@ type Hologram struct {
 	board [][]int
 }
 
+type LargestSquareResults struct {
+	x int
+	y int
+	power int
+	size int
+	square [][]int
+}
+
 func initHologram() *Hologram {
 	board := make([][]int, 300)
 
@@ -32,33 +40,35 @@ func (this *Hologram) Print() {
 	printSquare(this.board)
 }
 
-func (this *Hologram) MapSquare(x int, y int) [][]int {
-	if x >= len(this.board) - 2 || y >= len(this.board) - 2 {
+func (this *Hologram) MapSquare(x int, y int, size int) [][]int {
+	if x >= len(this.board) - (size - 1) ||
+		y >= len(this.board) - (size - 1) || 
+		size < 1 || size > 300 {
 		return nil
 	}
 	
-	mapped := make([][]int, 3)
+	mapped := make([][]int, size)
 	index := 0
-	for i := y; i < y + 3; i++ {
-		mapped[index] = this.board[i][x:x+3]
+	for i := y; i < y + size; i++ {
+		mapped[index] = this.board[i][x:x+size]
 		index += 1
 	}
 	return mapped
 }
 
-func (this *Hologram) CheckHighestPower(x int, y int, width int, height int) (int, int, int, [][]int) {
+func (this *Hologram) CheckHighestPower(x int, y int, width int, height int, size int) (int, int, int, [][]int) {
 	// Create the arrays
 	squares := make([][][]int, height * width)
 	for i := y; i < y + height; i++ {
 		for j := x; j < x + width; j++ {
-			squares[height * i + j] = this.MapSquare(j, i)
+			squares[height * i + j] = this.MapSquare(j, i, size)
 		}
 	}
 
 	// Now check them
-	largest := 0
-	largestX := -1
-	largestY := -1
+	largest := 300 * 300 * -5 // the smallest total power value
+	largestX := 0
+	largestY := 0
 
 	for i := y; i < y + height; i++ {
 		for j := x; j < x + width; j++ {
@@ -72,6 +82,11 @@ func (this *Hologram) CheckHighestPower(x int, y int, width int, height int) (in
 	}
 
 	return largestX, largestY, largest, squares[largestY * height + largestX]
+}
+
+func (this *LargestSquareResults) Print() {
+	fmt.Println("************")
+	fmt.Println(this.x, this.y, this.size, this.power)
 }
 
 func getPowerLevel(x int, y int, serialNum int) int {
@@ -132,19 +147,53 @@ func checkSquare(square [][]int) int {
 	return sum
 }
 
-func findLargestSquare(hologram *Hologram, debug bool) (int, int) {
-	// There are 298 x 298 = 88804 3x3 squares
-	// to check if we don't apply any heuristics
-	// to narrow down results.
-	// This could be parallelized to improve performance.
-	x, y, highest, square := hologram.CheckHighestPower(0,0,298,298)
-
+func findLargestSquare(hologram *Hologram, debug bool) (int, int, int) {
 	if debug {
-		fmt.Printf("Highest power is at %d,%d with value %d: \n", x, y, highest)
-		printSquare(square)
+		fmt.Println("************")
 	}
 	
-	return x, y
+	// This could be parallelized to improve performance.
+	largestArr := make([]*LargestSquareResults, 300)
+	for i, _ := range largestArr {
+		x, y, highest, square := hologram.CheckHighestPower(0,0,300 - i,300 - i, i + 1)
+		largestArr[i] = &LargestSquareResults {
+			x: x,
+			y: y,
+			power: highest,
+			size: i + 1,
+			square: square,
+		}
+		if debug {
+			largestArr[i].Print()
+		}
+	}
+
+	largestIndex := -1
+	largestPower := 0
+
+	for i, lg := range largestArr {
+		if lg.power > largestPower {
+			largestPower = lg.power
+			largestIndex = i
+		}
+	}
+
+	if largestIndex == -1 {
+		log.Fatal("Unexpected: No largest square found.")
+	}
+
+	largest := largestArr[largestIndex]
+
+	if debug {
+		fmt.Printf("Highest power is at %d,%d with value %d and size %d\n",
+			largest.x,
+			largest.y,
+			largest.power,
+			largest.size)
+		printSquare(largest.square)
+	}
+	
+	return largest.x, largest.y, largest.size
 }
 
 func testPowerLevel() {
@@ -188,6 +237,8 @@ func main() {
 		hologram.Print()
 	}
 
-	pt1X, pt1Y := findLargestSquare(hologram, *debugFlag)
-	fmt.Println(pt1X, pt1Y)
+	// pt1X, pt1Y := findLargestSquare(hologram, *debugFlag)
+	// fmt.Println(pt1X, pt1Y)
+	pt2X, pt2Y, pt2Size := findLargestSquare(hologram, *debugFlag)
+	fmt.Println(pt2X, pt2Y, pt2Size)
 }
