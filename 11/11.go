@@ -147,6 +147,21 @@ func checkSquare(square [][]int) int {
 	return sum
 }
 
+func findLargest3x3Square(hologram *Hologram, debug bool) (int, int) {
+	// There are 298 x 298 = 88804 3x3 squares
+	// to check if we don't apply any heuristics
+	// to narrow down results.
+	// This could be parallelized to improve performance.
+	x, y, highest, square := hologram.CheckHighestPower(0, 0, 298, 298, 3)
+
+	if debug {
+		fmt.Printf("Highest power is at %d,%d with value %d: \n", x, y, highest)
+		printSquare(square)
+	}
+
+	return x, y
+}
+
 func findLargestSquare_partial(hologram *Hologram, largestArr []*LargestSquareResults, start int, end int, debug bool, wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -257,8 +272,8 @@ func main() {
 		hologram.Print()
 	}
 
-	// pt1X, pt1Y := findLargestSquare(hologram, *debugFlag)
-	// fmt.Println(pt1X, pt1Y)
+	pt1X, pt1Y := findLargest3x3Square(hologram, *debugFlag)
+	fmt.Printf("%d,%d\n", pt1X, pt1Y)
 	pt2X, pt2Y, pt2Size := findLargestSquare(hologram, *debugFlag)
-	fmt.Println(pt2X, pt2Y, pt2Size)
+	fmt.Printf("%d,%d,%d\n", pt2X, pt2Y, pt2Size)
 }
