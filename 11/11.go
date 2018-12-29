@@ -147,14 +147,10 @@ func checkSquare(square [][]int) int {
 	return sum
 }
 
-func findLargestSquare(hologram *Hologram, debug bool) (int, int, int) {
-	if debug {
-		fmt.Println("************")
-	}
-	
-	// This could be parallelized to improve performance.
-	largestArr := make([]*LargestSquareResults, 300)
-	for i, _ := range largestArr {
+func findLargestSquare_partial(hologram *Hologram, largestArr []*LargestSquareResults, start int, end int, debug bool, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	for i := start; i < end; i++ {
 		x, y, highest, square := hologram.CheckHighestPower(0,0,300 - i,300 - i, i + 1)
 		largestArr[i] = &LargestSquareResults {
 			x: x,
@@ -167,6 +163,30 @@ func findLargestSquare(hologram *Hologram, debug bool) (int, int, int) {
 			largestArr[i].Print()
 		}
 	}
+}
+
+func findLargestSquare(hologram *Hologram, debug bool) (int, int, int) {
+	var wg sync.WaitGroup
+	
+	if debug {
+		fmt.Println("************")
+	}
+	
+	// Divided it into 4 chunks to work on in parallel.
+	// Should improve performance a bit, but I will need
+	// to optimize the actual algorithm itself to see a
+	// substantial performance boost (Right now it's O(n^4)
+	// which is no good).
+	largestArr := make([]*LargestSquareResults, 300)
+
+	wg.Add(4)
+
+	go findLargestSquare_partial(hologram, largestArr, 0, 75, debug, &wg)
+	go findLargestSquare_partial(hologram, largestArr, 75, 150, debug, &wg)
+	go findLargestSquare_partial(hologram, largestArr, 150, 225, debug, &wg)
+	go findLargestSquare_partial(hologram, largestArr, 225, 300, debug, &wg)
+
+	wg.Wait()
 
 	largestIndex := -1
 	largestPower := 0
