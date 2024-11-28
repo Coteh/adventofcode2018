@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Current File",
+            "type": "go",
+            "request": "launch",
+            "program": "${file}",
+            "cwd": "${workspaceFolder}",
+            "env": {},
+            "args": [],
+            "console": "integratedTerminal"
+        }
+    ]
+}
