@@ -7,28 +7,30 @@ This is the first year I did Advent of Code. I used Go for this challenge, as I 
 To compile and run:
 
 ```sh
-go run 01/01.go
+go run 03/03.go
 
 # pass in input file directly
 
-go run 01/01.go < 01/input
+go run 03/03.go < 03/input
 ```
 
 Alternatively, the programs can be compiled then run directly:
 
 ```sh
-go build 01/01 01/01/go
+go build -o 03/03 03/03.go
 ```
 
 Then once it's compiled, can simply run using:
 
 ```sh
-./01/01
+./03/03
 
 # pass in input file directly
 
-./01/01 < 01/input
+./03/03 < 03/input
 ```
+
+NOTE: Days 1 and 2 are each split into 2 sub-modules, ending in either `-1` or `-2` (for parts 1 and 2 respectively)
 
 ## Progress
 
