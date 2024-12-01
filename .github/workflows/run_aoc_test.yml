@@ -1,0 +1,15 @@
+name: Test AoC 2018
+on: [push]
+jobs:
+  Test-AoC-2018:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Checking out ${{ github.ref }} from ${{ github.repository }}."
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '^1.19.1'
+      - name: Run test
+        run: ./test.sh

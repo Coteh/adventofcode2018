@@ -13,3 +13,7 @@
 
 # DS_Store
 .DS_Store
+
+# Program output
+[0-9]*/[0-9]*[^.go]
+[0-9]*/[0-9]*.exe
