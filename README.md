@@ -1,5 +1,7 @@
 # adventofcode2018
 
+[![Test AoC 2018](https://github.com/Coteh/adventofcode2018/actions/workflows/run_aoc_test.yml/badge.svg)](https://github.com/Coteh/adventofcode2018/actions/workflows/run_aoc_test.yml)
+
 This is the first year I did Advent of Code. I used Go for this challenge, as I was learning Go at the time.
 
 ## Instructions
