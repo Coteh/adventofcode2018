@@ -53,7 +53,7 @@ NOTE: Days 1 and 2 are each split into 2 sub-modules, ending in either `-1` or `
 |  13  |   ✅   |        |
 |  14  |   ✅   |   ✅   |
 |  15  |        |        |
-|  16  |        |        |
+|  16  |   ✅   |        |
 |  17  |        |        |
 |  18  |        |        |
 |  19  |        |        |
