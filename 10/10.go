@@ -1,14 +1,14 @@
 package main
 
 import (
-	"fmt"
-	"strings"
 	"bufio"
+	"flag"
+	"fmt"
 	"io"
 	"log"
 	"os"
-	"flag"
 	"strconv"
+	"strings"
 )
 
 type Vector struct {
@@ -17,14 +17,14 @@ type Vector struct {
 }
 
 type LightPoint struct {
-	position	Vector
-	velocity 	Vector
+	position Vector
+	velocity Vector
 }
 
 func parseVector(input string, debug bool) Vector {
-	newVec := Vector {}
+	newVec := Vector{}
 
-	removedArrows := input[1:len(input) - 1]
+	removedArrows := input[1 : len(input)-1]
 	splitArr := strings.Split(removedArrows, ",")
 
 	px, err := strconv.ParseInt(strings.TrimLeft(splitArr[0], " "), 10, 32)
@@ -54,14 +54,11 @@ func parseLightPoint(input string, debug bool) LightPoint {
 			// remove velocity portion from split string
 			valSplit := strings.Split(val, " v")
 			lightPoint.position = parseVector(valSplit[0], debug)
-			break;
 		case 2:
 			lightPoint.velocity = parseVector(val, debug)
-			break;
-		default:	// initial state, continue to below
-			break;
+		default: // initial state, continue to below
 		}
-		
+
 		if strings.Contains(val, "position") {
 			parseState = 1
 		} else if strings.Contains(val, "velocity") {
@@ -83,7 +80,7 @@ func printBoard(board [][]rune) {
 
 func calculateCenterPoint(workingPoints []Vector, boardLength int) Vector {
 	center := Vector{}
-	
+
 	for _, pos := range workingPoints {
 		center.x += pos.x
 		center.y += pos.y
@@ -100,8 +97,8 @@ func calculateCenterPoint(workingPoints []Vector, boardLength int) Vector {
 // from here https://stackoverflow.com/a/29729612
 func arePointsClose(points []Vector, centerPoint Vector) bool {
 	for _, pos := range points {
-		if float64(pos.x - centerPoint.x) > 10 &&
-			float64(pos.y - centerPoint.y) > 10 {
+		if float64(pos.x-centerPoint.x) > 10 &&
+			float64(pos.y-centerPoint.y) > 10 {
 			return false
 		}
 	}
@@ -113,7 +110,7 @@ func runLoop(lightPoints []LightPoint, boardLength int, endTime int) {
 	if len(lightPoints) == 0 {
 		log.Fatal("No light points")
 	}
-	
+
 	board := make([][]rune, boardLength)
 	for i, _ := range board {
 		board[i] = make([]rune, boardLength)
@@ -138,8 +135,8 @@ func runLoop(lightPoints []LightPoint, boardLength int, endTime int) {
 		center = calculateCenterPoint(workingPoints, boardLength)
 
 		// calculate relative (0,0) point
-		originX = center.x - boardLength / 2
-		originY = center.y - boardLength / 2
+		originX = center.x - boardLength/2
+		originY = center.y - boardLength/2
 
 		// skip the drawing if points aren't close
 		if arePointsClose(workingPoints, center) {
@@ -157,21 +154,21 @@ func runLoop(lightPoints []LightPoint, boardLength int, endTime int) {
 				clearPoints[i].x = -1
 				clearPoints[i].y = -1
 			}
-			
+
 			// plot new points
 			for i, pos := range workingPoints {
 				boardX = -1
 				boardY = -1
 				x = pos.x
 				y = pos.y
-				if x >= center.x - boardLength / 2 &&
-					x < center.x + boardLength / 2 &&
-					y >= center.y - boardLength / 2 &&
-					y < center.y + boardLength / 2 {
-						boardX = x - originX
-						boardY = y - originY
-						clearPoints[i].x = boardX
-						clearPoints[i].y = boardY
+				if x >= center.x-boardLength/2 &&
+					x < center.x+boardLength/2 &&
+					y >= center.y-boardLength/2 &&
+					y < center.y+boardLength/2 {
+					boardX = x - originX
+					boardY = y - originY
+					clearPoints[i].x = boardX
+					clearPoints[i].y = boardY
 				}
 				if boardX >= 0 && boardY >= 0 &&
 					boardX < boardLength &&
@@ -179,7 +176,7 @@ func runLoop(lightPoints []LightPoint, boardLength int, endTime int) {
 					board[boardY][boardX] = '#'
 				}
 			}
-			
+
 			// draw the board
 			fmt.Printf("After %d seconds:\n", time)
 			printBoard(board)
@@ -192,7 +189,7 @@ func main() {
 	flag.Parse()
 
 	reader := bufio.NewReader(os.Stdin)
-	
+
 	lightPoints := make([]LightPoint, 0, 5)
 
 	for true {
@@ -202,13 +199,13 @@ func main() {
 				log.Fatal("Encountered an error with input")
 				os.Exit(1)
 			}
-			break;
+			break
 		}
 		input = strings.TrimRight(input, "\n")
 		if len(input) == 0 {
 			continue
 		}
-		
+
 		if *debugFlag {
 			fmt.Println(input)
 		}
