@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -91,19 +92,16 @@ func calculateCenterPoint(workingPoints []Vector, boardLength int) Vector {
 	return center
 }
 
-// If every point is near the center (average) point
-// in at least one dimension, then the points are "close".
+// Sum up all distances between points and the center point
 // I got the idea of checking in at least one dimension
 // from here https://stackoverflow.com/a/29729612
-func arePointsClose(points []Vector, centerPoint Vector) bool {
+func calculateClosenessValue(points []Vector, centerPoint Vector) float64 {
+	var totalDist float64
 	for _, pos := range points {
-		if float64(pos.x-centerPoint.x) > 10 &&
-			float64(pos.y-centerPoint.y) > 10 {
-			return false
-		}
+		totalDist += math.Abs(float64(pos.x-centerPoint.x)) + math.Abs(float64(pos.y-centerPoint.y))
 	}
 
-	return true
+	return totalDist
 }
 
 func runLoop(lightPoints []LightPoint, boardLength int, endTime int) {
@@ -112,9 +110,9 @@ func runLoop(lightPoints []LightPoint, boardLength int, endTime int) {
 	}
 
 	board := make([][]rune, boardLength)
-	for i, _ := range board {
+	for i := range board {
 		board[i] = make([]rune, boardLength)
-		for j, _ := range board[i] {
+		for j := range board[i] {
 			board[i][j] = '.'
 		}
 	}
@@ -123,6 +121,9 @@ func runLoop(lightPoints []LightPoint, boardLength int, endTime int) {
 	var center Vector
 	workingPoints := make([]Vector, len(lightPoints))
 	clearPoints := make([]Vector, len(lightPoints))
+
+	// Records the closest total distance of all points to the center point
+	var lowestCloseness float64 = math.MaxFloat64
 
 	for time := 0; time <= endTime; time++ {
 		// update working points
@@ -138,8 +139,13 @@ func runLoop(lightPoints []LightPoint, boardLength int, endTime int) {
 		originX = center.x - boardLength/2
 		originY = center.y - boardLength/2
 
-		// skip the drawing if points aren't close
-		if arePointsClose(workingPoints, center) {
+		// Once the points start scattering again, print out what the board was at the time,
+		// which should have the message
+		closeness := calculateClosenessValue(workingPoints, center)
+		if closeness < lowestCloseness {
+			// Record the new closest total distance
+			lowestCloseness = closeness
+
 			// clear board of old points if any
 			if time > 0 {
 				for _, cp := range clearPoints {
@@ -150,7 +156,7 @@ func runLoop(lightPoints []LightPoint, boardLength int, endTime int) {
 			}
 
 			// clear clear points
-			for i, _ := range clearPoints {
+			for i := range clearPoints {
 				clearPoints[i].x = -1
 				clearPoints[i].y = -1
 			}
@@ -176,10 +182,10 @@ func runLoop(lightPoints []LightPoint, boardLength int, endTime int) {
 					board[boardY][boardX] = '#'
 				}
 			}
-
-			// draw the board
-			fmt.Printf("After %d seconds:\n", time)
+		} else {
 			printBoard(board)
+			fmt.Println(time - 1)
+			break
 		}
 	}
 }
@@ -192,7 +198,7 @@ func main() {
 
 	lightPoints := make([]LightPoint, 0, 5)
 
-	for true {
+	for {
 		input, err := reader.ReadString('\n')
 		if err != nil {
 			if err != io.EOF {

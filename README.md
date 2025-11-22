@@ -47,8 +47,8 @@ NOTE: Days 1 and 2 are each split into 2 sub-modules, ending in either `-1` or `
 |  7   |   ✅   |   ✅   |
 |  8   |   ✅   |   ✅   |
 |  9   |   ✅   |   ✅   |
-|  10  |   ✅*  |   ✅   |
-|  11  |   ✅   |   ✅** |
+|  10  |   ✅   |   ✅   |
+|  11  |   ✅   |   ✅*  |
 |  12  |   ✅   |        |
 |  13  |   ✅   |        |
 |  14  |   ✅   |   ✅   |
@@ -64,6 +64,4 @@ NOTE: Days 1 and 2 are each split into 2 sub-modules, ending in either `-1` or `
 |  24  |        |        |
 |  25  |        |        |
 
-\* Output has to be verified manually at the moment. See TODO comment in `./10/test.sh` for more info.
-
-\** Day 11 part 2 is incredibly slow at the moment. Will need to see if it can be optimized later.
+\* Day 11 part 2 is incredibly slow at the moment. Will need to see if it can be optimized later.
