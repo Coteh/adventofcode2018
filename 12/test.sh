@@ -2,5 +2,7 @@
 
 set -e
 
-go run "./12/12.go" < "./12/sample" | diff "./12/expected_sample" -
-go run "./12/12.go" < "./12/input" | diff "./12/expected" -
+DATA_DIR="./data/2018"
+
+go run "./12/12.go" < "${DATA_DIR}/12/sample" | diff "${DATA_DIR}/12/expected_sample" -
+go run "./12/12.go" < "${DATA_DIR}/12/input" | diff "${DATA_DIR}/12/expected" -

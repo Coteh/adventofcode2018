@@ -37,11 +37,13 @@ func TestPart2(t *testing.T) {
 	}
 
 	testCases := []TestCase{
+		// TODO: Move these sample test cases to submodule
 		{"sample 1", "51589", 9},
 		{"sample 2", "01245", 5},
 		{"sample 3", "92510", 18},
 		{"sample 4", "59414", 2018},
 		{"https://www.reddit.com/r/adventofcode/comments/a671s8/2018_day_14_part_2_i_dont_know_why_my_answer_is/", "147061", 20283721},
+		// TODO: Remove this test case and update test.sh to test using data file from submodule
 		{"input", "409551", 20219475},
 		{"last digit of input is the second digit of recipe sum", "5158916", 9},
 	}

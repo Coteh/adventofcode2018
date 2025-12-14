@@ -10,6 +10,7 @@ func TestPowerLevel(t *testing.T) {
 		y            int
 		expected     int
 	}{
+		// TODO: Move these sample test cases to submodule
 		{"sample 1", 8, 3, 5, 4},
 		{"sample 2", 57, 122, 79, -5},
 		{"sample 3", 39, 217, 196, 0},
@@ -31,8 +32,10 @@ func TestPart1(t *testing.T) {
 		expectedX    int
 		expectedY    int
 	}{
+		// TODO: Move these sample test cases to submodule
 		{"sample 5", 18, 33, 45},
 		{"sample 6", 42, 21, 61},
+		// TODO: Remove this test case and update test.sh to test using data file from submodule
 		{"input", 7672, 22, 18},
 	}
 
@@ -53,8 +56,10 @@ func TestPart2(t *testing.T) {
 		expectedY    int
 		expectedSize int
 	}{
+		// TODO: Move these sample test cases to submodule
 		{"sample 5", 18, 90, 269, 16},
 		{"sample 6", 42, 232, 251, 12},
+		// TODO: Remove this test case and update test.sh to test using data file from submodule
 		{"input", 7672, 234, 197, 14},
 	}
 
